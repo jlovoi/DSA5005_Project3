@@ -9,6 +9,7 @@
 #include <stdio.h>
 #include <iostream>
 #include <vector>
+#include <queue>
 
 using namespace std;
 
@@ -22,7 +23,8 @@ protected:
     int* v1;
     int* v2;
     int index = 0;
-    int count = 0;
+    int dfscount = 0; // Used to keep track of index in dfs
+    int bfscount = 0; // Used to keep track of index in bfs
 public:
     EdgeList();
     EdgeList(int n, int m);
@@ -31,8 +33,8 @@ public:
     bool isAnEdge(int a, int b);
     vector<int> listNeighbors(int a);
     int* DFS(int start);
-    void DFSRecur(int x, bool* visited);
-    //int* BFS(int start);
+    void DFSRecur(int x, bool *visited);
+    int* BFS(int start);
 };
 
 EdgeList::EdgeList() {
@@ -95,11 +97,9 @@ int* EdgeList::DFS(int start) {
 
 void EdgeList::DFSRecur(int x, bool *visited) {
     // This node, x, has now been visited
-    cout << "ISSA " << x << endl;
     visited[x] = true;
-    dfs[count] = x;
-    cout << "added " << x << " at " << count << endl;
-    count++;
+    dfs[dfscount] = x;
+    dfscount++;
     
     for (auto it = listNeighbors(x).begin(); it != listNeighbors(x).end(); it++) {
         if (*it < 0 || *it > numNodes) {
@@ -111,6 +111,38 @@ void EdgeList::DFSRecur(int x, bool *visited) {
     }
 }
 
+int* EdgeList::BFS(int start) {
+    // Keeps track of which nodes have been visited
+    bool* visited = new bool[numNodes];
+    for (int i = 0; i < (numNodes); i++) {
+        visited[i] = false;
+    }
+    visited[0] = true;
+    queue<int> toVisit; // Nodes to be visited in this specific order
+    toVisit.push(start);
+    
+    while (!toVisit.empty()) {
+        // Visit the node at the front of toVisit
+        visited[toVisit.front()] = true;
+        bfs[bfscount] = toVisit.front();
+        bfscount++;
+            for (auto it = listNeighbors(toVisit.front()).begin(); it != listNeighbors(toVisit.front()).begin(); it++) {
+            // Do not use out-of-bound numbers
+            if (*it < 0 || *it > numNodes) {
+                break;
+            }
+            // push unvisited neighbors to the queue, and mark them as visited so they dont get added more than once
+            if (!visited[*it]) {
+                toVisit.push(*it);
+                visited[*it] = true;
+            }
+        }
+        toVisit.pop();
+    }
+    return bfs;
+}
+
+
 int main() {
     EdgeList* edgelist = new EdgeList(5, 7);
     (*edgelist).createEdge(1, 5);
@@ -120,9 +152,9 @@ int main() {
     (*edgelist).createEdge(3, 3);
     (*edgelist).createEdge(4, 3);
     (*edgelist).createEdge(4, 5);
-//    cout << (*edgelist).isAnEdge(1, 5) << endl;
-//    cout << (*edgelist).isAnEdge(5, 1) << endl;
-//    cout << (*edgelist).isAnEdge(1, 2) << endl;
+    cout << (*edgelist).isAnEdge(1, 5) << endl;
+    cout << (*edgelist).isAnEdge(5, 1) << endl;
+    cout << (*edgelist).isAnEdge(1, 2) << endl;
     vector<int> one = (*edgelist).listNeighbors(2);
     for (auto it = one.begin(); it != one.end(); it++) {
         cout << *it << endl;
@@ -130,5 +162,9 @@ int main() {
     int* arr = (*edgelist).DFS(5);
     for (int i = 0; i < 5; i++) {
         cout << arr[i] << endl;
+    }
+    int* bfs = (*edgelist).BFS(1);
+    for (int i = 0; i < 5; i++) {
+        cout << bfs[i] << endl;
     }
 }
