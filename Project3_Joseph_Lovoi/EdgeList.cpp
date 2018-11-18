@@ -10,11 +10,11 @@
 #include <iostream>
 #include <vector>
 #include <queue>
+#include <cstdlib>
 
 using namespace std;
 
 class EdgeList {
-    //ostream& operator << (EdgeList& printThis);
 protected:
     int numNodes;
     int numEdges;
@@ -29,12 +29,15 @@ public:
     EdgeList();
     EdgeList(int n, int m);
     void createEdge(int x, int y);
-    //~EdgeList();
     bool isAnEdge(int a, int b);
     vector<int> listNeighbors(int a);
     int* DFS(int start);
     void DFSRecur(int x, bool *visited);
     int* BFS(int start);
+    void display(int start);
+    void checkEdge(int a, int b);
+    friend ostream& operator<<(ostream& out, EdgeList& edgelist);
+    ~EdgeList();
 };
 
 EdgeList::EdgeList() {
@@ -68,6 +71,7 @@ bool EdgeList::isAnEdge(int a, int b) {
         }
         curr++;
     }
+    
     return ret;
 }
 
@@ -142,29 +146,109 @@ int* EdgeList::BFS(int start) {
     return bfs;
 }
 
+void EdgeList::display(int start) {
+    DFS(start);
+    BFS(start);
+    // Print out BFS
+    cout << "Printing BFS Ordering for starting node " << start << ": ";
+    for (int i = 0; i < (*this).numNodes; i++) {
+        cout << (*this).bfs[i] << " ";
+    }
+    cout << endl;
+    
+    // Print out DFS
+    cout << "Printing DFS Ordering for starting node " << start << ": ";
+    for (int i = 0; i < (*this).numNodes; i++) {
+        cout << (*this).dfs[i] << " ";
+    }
+    cout << endl;
+}
 
-int main() {
-    EdgeList* edgelist = new EdgeList(5, 7);
-    (*edgelist).createEdge(1, 5);
-    (*edgelist).createEdge(1, 4);
-    (*edgelist).createEdge(1, 3);
-    (*edgelist).createEdge(2, 5);
-    (*edgelist).createEdge(3, 3);
-    (*edgelist).createEdge(4, 3);
-    (*edgelist).createEdge(4, 5);
-    cout << (*edgelist).isAnEdge(1, 5) << endl;
-    cout << (*edgelist).isAnEdge(5, 1) << endl;
-    cout << (*edgelist).isAnEdge(1, 2) << endl;
-    vector<int> one = (*edgelist).listNeighbors(2);
-    for (auto it = one.begin(); it != one.end(); it++) {
-        cout << *it << endl;
+void EdgeList::checkEdge(int a, int b) {
+    if (isAnEdge(a, b)) {
+        vector<int> neighbors = listNeighbors(a);
+        cout << "Edge exists, printing neighbors of node " << a << ": ";
+        for (auto it = neighbors.begin(); it != neighbors.end(); it++) {
+            cout << *it << " ";
+        }
+        cout << endl;
     }
-    int* arr = (*edgelist).DFS(5);
-    for (int i = 0; i < 5; i++) {
-        cout << arr[i] << endl;
-    }
-    int* bfs = (*edgelist).BFS(1);
-    for (int i = 0; i < 5; i++) {
-        cout << bfs[i] << endl;
+    else {
+        cout << "Edge does not exist." << endl;
     }
 }
+
+ostream& operator<<(ostream& out, EdgeList& edgelist) {
+    // Print Out the Parallel Arrays
+    out << "Printing Parallel Arrays:" << endl;
+    out << "Array 1: ";
+    for (int i = 0; i < edgelist.numEdges; i++) {
+        out << edgelist.v1[i] << " ";
+    }
+    out << endl << "Array 2: ";
+    for (int i = 0; i < edgelist.numEdges; i++) {
+        out << edgelist.v2[i] << " ";
+    }
+    out << endl;
+    
+    return out;
+}
+
+EdgeList::~EdgeList() {
+    delete[] dfs;
+    delete[] bfs;
+    delete[] v1;
+    delete[] v2;
+}
+
+
+int main() {
+    char c;
+    cin.get(c);
+    int nodes = c - 48;
+    cin.get(c); // New Line Char
+    cin.get(c);
+    int edges = c - 48;
+    cin.get(c); // New Line Char
+    EdgeList* edgelist = new EdgeList(nodes, edges);
+    while (!cin.eof()) {
+        cin.get(c);
+        int x = c - 48;
+        cin.get(c); // This should be a space, so skip it
+        cin.get(c);
+        int y = c - 48;
+
+        cout << "Creating edge between " << x << " and " << y << endl;
+        (*edgelist).createEdge(x, y);
+        cin.get(c); // New Line Char
+    }
+
+    
+    
+//    EdgeList* edgelist = new EdgeList(5, 7);
+//    (*edgelist).createEdge(1, 5);
+//    (*edgelist).createEdge(1, 4);
+//    (*edgelist).createEdge(1, 3);
+//    (*edgelist).createEdge(2, 5);
+//    (*edgelist).createEdge(3, 3);
+//    (*edgelist).createEdge(4, 3);
+//    (*edgelist).createEdge(4, 5);
+//    cout << (*edgelist).isAnEdge(1, 5) << endl;
+//    cout << (*edgelist).isAnEdge(5, 1) << endl;
+//    cout << (*edgelist).isAnEdge(1, 2) << endl;
+//
+//    cout << *edgelist << endl;
+//    (*edgelist).display(5);
+    
+    srand(time(NULL));
+    int random1 = rand() % 5 + 1;
+    cout << "Random int 1: " << random1 << endl;
+    int random2 = rand() % 5 + 1;
+    cout << "Random int 2: " << random2 << endl;
+    (*edgelist).checkEdge(random1, random2);
+    
+    return 0;
+    
+}
+
+
